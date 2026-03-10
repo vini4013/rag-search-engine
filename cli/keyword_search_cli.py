@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
 from search import search
 from inverted_index import InvertedIndex
 from helper import load_json
@@ -22,18 +23,13 @@ def main() -> None:
             print(f"Searching for: {args.query}")
             results = search(args.query, max_result=5)
             for index, movie in enumerate(results, start=1):
-                print(f"{index}. {movie.get('title', '')}")
+                print(f"{index}. {movie.get('title', '')} ({movie.get('id', '')})")
         case "build":
             movie_data = load_json(DATA_PATH)
             movies = movie_data.get("movies", [])
-
             inverted_index = InvertedIndex()
             inverted_index.build(movies)
             inverted_index.save()
-
-            merida_documents = inverted_index.get_documents("merida")
-            first_document_id = merida_documents[0] if merida_documents else None
-            print(f"First document for token 'merida' = {first_document_id}")
         case _:
             parser.print_help()
 

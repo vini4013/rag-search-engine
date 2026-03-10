@@ -1,5 +1,6 @@
 import pickle
 from pathlib import Path
+from helper import preprocess_into_tokens
 
 
 class InvertedIndex:
@@ -11,20 +12,21 @@ class InvertedIndex:
         self.docmap = {}
 
     def __add_document(self, doc_id, text):
-        for word in text.split():
-            normalized_word = word.lower()
-            if normalized_word not in self.index:
-                self.index[normalized_word] = set()
-            self.index[normalized_word].add(doc_id)
+        tokens = preprocess_into_tokens(text)
+        for token in set(tokens):
+            if token not in self.index:
+                self.index[token] = set()
+            self.index[token].add(doc_id)
 
     def build(self, movies):
         self.index = {}
         self.docmap = {}
 
-        for movie in movies:
-            doc_id = movie["id"]
-            self.docmap[doc_id] = movie
-            self.__add_document(doc_id, f"{movie['title']} {movie['description']}")
+        for m in movies:
+            doc_id = m["id"]
+            doc_description = f"{m['title']} {m['description']}"
+            self.docmap[doc_id] = m
+            self.__add_document(doc_id, doc_description)
 
     def get_documents(self, term):
         normalized_term = term.lower()
