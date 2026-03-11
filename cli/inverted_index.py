@@ -2,6 +2,8 @@ import pickle
 from pathlib import Path
 from collections import Counter
 from helper import preprocess_into_tokens
+import math
+from constants import TOTAL_DOC_COUNT
 
 
 class InvertedIndex:
@@ -51,6 +53,15 @@ class InvertedIndex:
             return 0
 
         return self.term_frequencies[doc_id].get(token, 0)
+    
+    def get_idf(self, term):
+        tokens = preprocess_into_tokens(term)
+        if len(tokens) != 1:
+            raise ValueError("Term must preprocess into exactly one token")
+        
+        token = tokens[0]
+        doc_freq = len(self.index.get(token, set()))
+        return math.log((TOTAL_DOC_COUNT + 1) / (doc_freq + 1))
 
     def save(self):
         cache_dir = Path("cache")
