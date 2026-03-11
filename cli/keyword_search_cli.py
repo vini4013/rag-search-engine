@@ -41,38 +41,17 @@ def main() -> None:
             print("Inverted index built and saved successfully.")
         case "tf":
             inverted_index = InvertedIndex()
-            try:
-                inverted_index.load()
-            except FileNotFoundError as error:
-                print(f"Error: {error}")
-                sys.exit(1)
-
+            inverted_index.load()
             print(inverted_index.get_tf(args.doc_id, args.term))
         case "idf":
             inverted_index = InvertedIndex()
-            try:
-                inverted_index.load()
-            except FileNotFoundError as error:
-                print(f"Error: {error}")
-                sys.exit(1)
+            inverted_index.load()
             idf = inverted_index.get_idf(args.term)
             print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
         case "tfidf":
             inverted_index = InvertedIndex()
-            try:
-                inverted_index.load()
-            except FileNotFoundError as error:
-                print(f"Error: {error}")
-                sys.exit(1)
-
-            try:
-                tf = inverted_index.get_tf(args.doc_id, args.term)
-                idf = inverted_index.get_idf(args.term)
-            except ValueError as error:
-                print(f"Error: {error}")
-                sys.exit(1)
-
-            tfidf = tf * idf
+            inverted_index.load()
+            tfidf = inverted_index.get_tfidf(args.doc_id, args.term)
             print(f"TF-IDF score of '{args.term}' in document '{args.doc_id}': {tfidf:.2f}")       
         case _:
             parser.print_help()

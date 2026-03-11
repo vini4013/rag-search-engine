@@ -3,7 +3,6 @@ from pathlib import Path
 from collections import Counter
 from helper import preprocess_into_tokens
 import math
-from constants import TOTAL_DOC_COUNT
 
 
 class InvertedIndex:
@@ -37,31 +36,6 @@ class InvertedIndex:
             doc_description = f"{m['title']} {m['description']}"
             self.docmap[doc_id] = m
             self.__add_document(doc_id, doc_description)
-
-    def get_documents(self, term):
-        normalized_term = term.lower()
-        documents = self.index.get(normalized_term, set())
-        return sorted(documents)
-
-    def get_tf(self, doc_id, term):
-        tokens = preprocess_into_tokens(term)
-        if len(tokens) != 1:
-            raise ValueError("Term must preprocess into exactly one token")
-
-        token = tokens[0]
-        if doc_id not in self.term_frequencies:
-            return 0
-
-        return self.term_frequencies[doc_id].get(token, 0)
-    
-    def get_idf(self, term):
-        tokens = preprocess_into_tokens(term)
-        if len(tokens) != 1:
-            raise ValueError("Term must preprocess into exactly one token")
-        
-        token = tokens[0]
-        doc_freq = len(self.index.get(token, set()))
-        return math.log((TOTAL_DOC_COUNT + 1) / (doc_freq + 1))
 
     def save(self):
         cache_dir = Path("cache")
@@ -100,3 +74,33 @@ class InvertedIndex:
 
         with open(term_frequencies_path, "rb") as file:
             self.term_frequencies = pickle.load(file)
+
+    def get_documents(self, term):
+        documents = self.index.get(term, set())
+        return sorted(documents)
+
+    def get_tf(self, doc_id, term):
+        tokens = preprocess_into_tokens(term)
+        if len(tokens) != 1:
+            raise ValueError("Term must preprocess into exactly one token")
+
+        token = tokens[0]
+        if doc_id not in self.term_frequencies:
+            return 0
+
+        return self.term_frequencies[doc_id].get(token, 0)
+    
+    def get_idf(self, term):
+        tokens = preprocess_into_tokens(term)
+        if len(tokens) != 1:
+            raise ValueError("Term must preprocess into exactly one token")
+        
+        token = tokens[0]
+        doc_freq = len(self.index.get(token, set()))
+        doc_count = len(self.docmap)
+        return math.log((doc_count + 1) / (doc_freq + 1))
+    
+    def get_tfidf(self, doc_id, term):
+        tf = self.get_tf(doc_id, term)
+        idf = self.get_idf(term)
+        return tf * idf
