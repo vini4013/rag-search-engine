@@ -99,6 +99,20 @@ class InvertedIndex:
         doc_freq = len(self.index.get(token, set()))
         doc_count = len(self.docmap)
         return math.log((doc_count + 1) / (doc_freq + 1))
+
+    def get_bm25_idf(self, term: str) -> float:
+        tokens = preprocess_into_tokens(term)
+        if len(tokens) != 1:
+            raise ValueError("Term must preprocess into exactly one token")
+
+        token = tokens[0]
+        doc_freq = len(self.index.get(token, set()))
+        doc_count = len(self.docmap)
+        if doc_count == 0:
+            return 0.0
+
+        # BM25 to keep IDF stable for rare terms.
+        return math.log(1 + (doc_count - doc_freq + 0.5) / (doc_freq + 0.5))
     
     def get_tfidf(self, doc_id, term):
         tf = self.get_tf(doc_id, term)
