@@ -2,6 +2,7 @@ import pickle
 from pathlib import Path
 from collections import Counter
 from helper import preprocess_into_tokens
+from constants import BM25_K1
 import math
 
 
@@ -89,6 +90,15 @@ class InvertedIndex:
             return 0
 
         return self.term_frequencies[doc_id].get(token, 0)
+
+    def get_bm25_tf(self, doc_id, term, k1=BM25_K1):
+        tf = self.get_tf(doc_id, term)
+        if tf == 0:
+            return 0.0
+        
+        print(k1)
+
+        return (tf * (k1 + 1)) / (tf + k1)
     
     def get_idf(self, term):
         tokens = preprocess_into_tokens(term)
